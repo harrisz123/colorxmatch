@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Match Game - iOS 17 Style with Timer</title>
+    <title>Color Match Game - iOS Style</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
         body {
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         
         .ios-bg {
@@ -31,8 +32,8 @@
         
         .ios-slider {
             -webkit-appearance: none;
-            height: 2px;
-            border-radius: 1px;
+            height: 4px;
+            border-radius: 2px;
             background: #E5E5EA;
             outline: none;
         }
@@ -40,8 +41,8 @@
         .ios-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background: #007AFF;
             cursor: pointer;
@@ -49,8 +50,8 @@
         }
         
         .ios-slider::-moz-range-thumb {
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background: #007AFF;
             cursor: pointer;
@@ -60,46 +61,56 @@
         @keyframes hourglassAnimation {
             0% { transform: rotate(0deg); }
             50% { transform: rotate(180deg); }
-            100% { transform: rotate(180deg); }
+            100% { transform: rotate(360deg); }
         }
-
+        
         .hourglass {
+            animation: hourglassAnimation 120s linear infinite;
             display: inline-block;
-            font-size: 24px;
-            animation: hourglassAnimation 4s linear infinite; /* Slowed down by 0.5 speed */
         }
     </style>
 </head>
 <body class="ios-bg flex items-center justify-center min-h-screen p-4">
     <div class="ios-card p-8 rounded-3xl shadow-lg max-w-md w-full">
         <h1 class="text-3xl font-semibold mb-6 text-center text-gray-800">Color Match</h1>
-        <div class="flex justify-between items-center mb-4">
-            <div id="timer" class="text-xl font-semibold text-gray-800">
-                Time: 60s <span class="hourglass">⏳</span>
-            </div>
-            <div id="score" class="text-xl font-semibold text-gray-800">Score: 0</div>
+        <div id="startScreen" class="text-center">
+            <p class="mb-4 text-gray-600">Match the colors as closely as possible within 60 seconds!</p>
+            <button id="startButton" class="ios-button text-white px-6 py-3 rounded-full font-semibold text-lg">Start Game</button>
         </div>
-        <div class="flex justify-between mb-8">
-            <div id="targetColor" class="w-32 h-32 rounded-2xl shadow-md"></div>
-            <div id="playerColor" class="w-32 h-32 rounded-2xl shadow-md"></div>
+        <div id="gameScreen" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <div id="timer" class="text-2xl font-semibold text-gray-800">60s</div>
+                <div class="hourglass text-2xl">⏳</div>
+                <div id="score" class="text-2xl font-semibold text-gray-800">Score: 0</div>
+            </div>
+            <div class="flex justify-between mb-8">
+                <div id="targetColor" class="w-32 h-32 rounded-2xl shadow-md"></div>
+                <div id="playerColor" class="w-32 h-32 rounded-2xl shadow-md"></div>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-600">Red</label>
+                    <input type="range" id="redSlider" min="0" max="255" value="128" class="ios-slider w-full">
+                </div>
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-600">Green</label>
+                    <input type="range" id="greenSlider" min="0" max="255" value="128" class="ios-slider w-full">
+                </div>
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-600">Blue</label>
+                    <input type="range" id="blueSlider" min="0" max="255" value="128" class="ios-slider w-full">
+                </div>
+            </div>
+            <button id="checkMatch" class="ios-button text-white px-6 py-3 rounded-full w-full mt-8 font-semibold text-lg">Check Match</button>
+            <p id="result" class="mt-6 text-center font-semibold text-lg text-gray-800"></p>
         </div>
-        <div class="space-y-6">
-            <div>
-                <label class="block mb-2 text-sm font-medium text-gray-600">Red</label>
-                <input type="range" id="redSlider" min="0" max="255" value="128" class="ios-slider w-full">
-            </div>
-            <div>
-                <label class="block mb-2 text-sm font-medium text-gray-600">Green</label>
-                <input type="range" id="greenSlider" min="0" max="255" value="128" class="ios-slider w-full">
-            </div>
-            <div>
-                <label class="block mb-2 text-sm font-medium text-gray-600">Blue</label>
-                <input type="range" id="blueSlider" min="0" max="255" value="128" class="ios-slider w-full">
-            </div>
+        <div id="endScreen" class="hidden text-center">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Game Over!</h2>
+            <p id="finalScore" class="text-xl mb-4 text-gray-700"></p>
+            <p id="winnerMessage" class="text-lg mb-6 text-gray-600"></p>
+            <button id="restartButton" class="ios-button text-white px-6 py-3 rounded-full font-semibold text-lg">Play Again</button>
         </div>
-        <button id="checkMatch" class="ios-button text-white px-6 py-3 rounded-full w-full mt-8 font-semibold text-lg">Check Match</button>
-        <p id="result" class="mt-6 text-center font-semibold text-lg text-gray-800"></p>
-        <p class="mt-4 text-center text-sm text-gray-500">✨ Harris ✨</p>
+        <p class="mt-8 text-center text-sm text-gray-500">✨ Harris ✨</p>
     </div>
 
     <script>
@@ -107,6 +118,7 @@
         let score = 0;
         let timeLeft = 60;
         let timerInterval;
+        const highScore = localStorage.getItem('colorMatchHighScore') || 0;
 
         function generateRandomColor() {
             return {
@@ -136,29 +148,43 @@
             return Math.sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
         }
 
-        function updateTimer() {
-            timeLeft--;
-            document.getElementById('timer').innerHTML = `Time: ${timeLeft}s <span class="hourglass">⏳</span>`;
-            if (timeLeft <= 0) {
-                endGame();
-            }
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = `${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }, 1000);
         }
 
         function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('endScreen').classList.add('hidden');
             score = 0;
             timeLeft = 60;
             document.getElementById('score').textContent = `Score: ${score}`;
-            document.getElementById('timer').innerHTML = `Time: ${timeLeft}s <span class="hourglass">⏳</span>`;
-            document.getElementById('checkMatch').disabled = false;
+            document.getElementById('timer').textContent = `${timeLeft}s`;
             startNewRound();
-            timerInterval = setInterval(updateTimer, 1000);
+            startTimer();
         }
 
         function endGame() {
-            clearInterval(timerInterval);
-            document.getElementById('checkMatch').disabled = true;
-            document.getElementById('result').textContent = `Game Over! Final Score: ${score}`;
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.remove('hidden');
+            document.getElementById('finalScore').textContent = `Your Score: ${score}`;
+            if (score > highScore) {
+                localStorage.setItem('colorMatchHighScore', score);
+                document.getElementById('winnerMessage').textContent = `🎉 New High Score! 🎉`;
+            } else {
+                document.getElementById('winnerMessage').textContent = `High Score: ${highScore}`;
+            }
         }
+
+        document.getElementById('startButton').addEventListener('click', startGame);
+        document.getElementById('restartButton').addEventListener('click', startGame);
 
         document.getElementById('redSlider').addEventListener('input', updatePlayerColor);
         document.getElementById('greenSlider').addEventListener('input', updatePlayerColor);
@@ -194,7 +220,6 @@
             setTimeout(startNewRound, 1000);
         });
 
-        startGame();
         updatePlayerColor();
     </script>
 </body>
